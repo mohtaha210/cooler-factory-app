@@ -308,15 +308,15 @@ def generate_payment_pdf(
     pdf.set_margins(12, 12, 12)
     pdf.add_page()
 
-    # إضافة الشعار المرفق (الرافدين) في أعلى سند القبض
+    # محاولة إضافة شعار "الرافدين" في أعلى سند القبض مع التعامل الآمن إذا لم يُرفع الشعار كملف
     logo_path = "rafidain_logo.jpg"
     try:
-        with open(logo_path, "wb") as f:
-            f.write(9543.jpg.getbuffer() if hasattr(9543.jpg, 'getbuffer') else b"")
-        pdf.image(logo_path, x=75, y=10, w=60)
-        pdf.set_y(32)
+        if os.path.exists(logo_path):
+            pdf.image(logo_path, x=75, y=10, w=60)
+            pdf.set_y(32)
+        else:
+            pdf.set_y(12)
     except Exception:
-        # إذا لم يتوفر كائن الصورة المباشر، يتم تخطي وضع الصورة برفق ومتابعة الطباعة
         pdf.set_y(12)
 
     if os.path.exists(font_path):
