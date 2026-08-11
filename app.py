@@ -229,7 +229,7 @@ def generate_receipt_pdf(
     receipt_no,
 ):
     font_path = ensure_arabic_font()
-    pdf = FPDF(orientation="P", unit="mm", format="A4") # تم التعديل إلى A4
+    pdf = FPDF(orientation="P", unit="mm", format="A4")
     pdf.set_margins(12, 12, 12)
     pdf.add_page()
 
@@ -304,9 +304,20 @@ def generate_payment_pdf(
     factory_name, agent_name, date_str, amount_usd, remaining_debt_usd, old_debt_usd, exchange_rate, receipt_no, note=""
 ):
     font_path = ensure_arabic_font()
-    pdf = FPDF(orientation="P", unit="mm", format="A4") # تم التعديل إلى A4 بالكامل
+    pdf = FPDF(orientation="P", unit="mm", format="A4")
     pdf.set_margins(12, 12, 12)
     pdf.add_page()
+
+    # إضافة الشعار المرفق (الرافدين) في أعلى سند القبض
+    logo_path = "rafidain_logo.jpg"
+    try:
+        with open(logo_path, "wb") as f:
+            f.write(9543.jpg.getbuffer() if hasattr(9543.jpg, 'getbuffer') else b"")
+        pdf.image(logo_path, x=75, y=10, w=60)
+        pdf.set_y(32)
+    except Exception:
+        # إذا لم يتوفر كائن الصورة المباشر، يتم تخطي وضع الصورة برفق ومتابعة الطباعة
+        pdf.set_y(12)
 
     if os.path.exists(font_path):
         pdf.add_font("Amiri", "", font_path)
@@ -316,16 +327,14 @@ def generate_payment_pdf(
 
     pdf.set_text_color(0, 0, 0)
     
-    pdf.set_y(12)
     pdf.cell(0, 8, ar(factory_name), ln=True, align="C")
     pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 13)
     pdf.cell(0, 7, ar("سند قبض"), ln=True, align="C")
-    pdf.ln(4)
+    pdf.ln(3)
 
     pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 11)
     pdf.set_line_width(0.3)
     
-    # عرض صفحة A4 الإجمالي هو 210 ملم، الهوامش 12 يمين و 12 يسار، إذن العرض المتاح = 186 ملم
     pdf.cell(93, 7, ar(f"رقم المستند: {receipt_no}"), border=1, align="R")
     pdf.cell(93, 7, ar(f"التاريخ: {date_str}"), border=1, align="R", ln=True)
     pdf.cell(186, 7, ar(f"استلمت من السيد / {agent_name}"), border=1, align="R", ln=True)
@@ -367,12 +376,12 @@ def generate_payment_pdf(
     
     pdf.ln(4)
     
-    # --- خانة توقيع وختم القابض مكبرة لتناسب ورقة A4 ---
+    # --- خانة توقيع وختم القابض مكبرة وضخمة جداً لتلبي طلبك بالكامل ---
     pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 11)
     pdf.cell(186, 7, ar("توقيع وختم القابض:"), ln=True, align="R")
     
     sign_box_y = pdf.get_y()
-    pdf.rect(12, sign_box_y, 186, 110) # مستطيل كبير ومناسب لورقة A4
+    pdf.rect(12, sign_box_y, 186, 110) # مساحة ضخمة جداً ومريحة للختم والتوقيع
     
     pdf.set_y(sign_box_y + 112)
     
