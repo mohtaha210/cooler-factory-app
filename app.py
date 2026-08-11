@@ -330,8 +330,33 @@ def generate_payment_pdf(
     
     amount_iqd = int(round(amount_usd * exchange_rate))
     amount_in_words = f"مبلغ وقدره: {number_to_arabic_words(amount_iqd)} دينار عراقي فقط لا غير"
+    
+    # حفظ الإحداثيات لرسم خطوط الشطب فوق خانة التفقيط لمنع التزوير
+    x_start_box = pdf.get_x()
+    y_start_box = pdf.get_y()
+    
     pdf.set_fill_color(240, 243, 246)
     pdf.cell(132, 6, ar(amount_in_words), border=1, align="R", fill=True, ln=True)
+    
+    # --- إضافة شخطات مائلة (تشطيب أمان) فوق خانة المبلغ بالحروف ---
+    pdf.set_line_width(0.2)
+    pdf.set_draw_color(150, 150, 150) # لون رمادي خفيف للشخطات المائلة
+    
+    # رسم خطوط مائلة متوازية داخل المستطيل الخاص بمبلغ التفقيط
+    box_x = 8.5
+    box_y = y_start_box
+    box_w = 131
+    box_h = 6
+    step = 5  # المسافة بين الشخطات المائلة
+    
+    current_x = box_x + 4
+    while current_x < box_x + box_w:
+        pdf.line(current_x, box_y + box_h, current_x + 3, box_y)
+        current_x += step
+        
+    pdf.set_draw_color(0, 0, 0) # إعادة اللون الأسود للإطار العادي
+    pdf.set_line_width(0.3)
+    # -------------------------------------------------------------
     
     paid_iqd_val = int(round(amount_usd * exchange_rate))
     pdf.cell(66, 6, ar(f"سعر الصرف: {exchange_rate:,.0f} د.ع"), border=1, align="R")
