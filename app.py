@@ -331,32 +331,25 @@ def generate_payment_pdf(
     amount_iqd = int(round(amount_usd * exchange_rate))
     amount_in_words = f"مبلغ وقدره: {number_to_arabic_words(amount_iqd)} دينار عراقي فقط لا غير"
     
-    # حفظ الإحداثيات لرسم خطوط الشطب فوق خانة التفقيط لمنع التزوير
-    x_start_box = pdf.get_x()
     y_start_box = pdf.get_y()
-    
     pdf.set_fill_color(240, 243, 246)
     pdf.cell(132, 6, ar(amount_in_words), border=1, align="R", fill=True, ln=True)
     
-    # --- إضافة شخطات مائلة (تشطيب أمان) فوق خانة المبلغ بالحروف ---
+    # خطوط الشطب الأمني فوق خانة التفقيط
     pdf.set_line_width(0.2)
-    pdf.set_draw_color(150, 150, 150) # لون رمادي خفيف للشخطات المائلة
-    
-    # رسم خطوط مائلة متوازية داخل المستطيل الخاص بمبلغ التفقيط
+    pdf.set_draw_color(150, 150, 150)
     box_x = 8.5
     box_y = y_start_box
     box_w = 131
     box_h = 6
-    step = 5  # المسافة بين الشخطات المائلة
-    
+    step = 5
     current_x = box_x + 4
     while current_x < box_x + box_w:
         pdf.line(current_x, box_y + box_h, current_x + 3, box_y)
         current_x += step
         
-    pdf.set_draw_color(0, 0, 0) # إعادة اللون الأسود للإطار العادي
+    pdf.set_draw_color(0, 0, 0)
     pdf.set_line_width(0.3)
-    # -------------------------------------------------------------
     
     paid_iqd_val = int(round(amount_usd * exchange_rate))
     pdf.cell(66, 6, ar(f"سعر الصرف: {exchange_rate:,.0f} د.ع"), border=1, align="R")
@@ -370,10 +363,19 @@ def generate_payment_pdf(
     pdf.cell(132, 6, ar(f"الرصيد السابق: ${old_debt_usd:,.2f}  /  {old_iqd:,} د.ع"), border=1, align="R", fill=True, ln=True)
     pdf.cell(132, 6, ar(f"الرصيد بعد التسديد: ${remaining_debt_usd:,.2f}  /  {rem_iqd:,} د.ع"), border=1, align="R", fill=True, ln=True)
     
-    pdf.ln(4)
-    pdf.cell(132, 6, ar("توقيع وختم القابض: .........................."), ln=True, align="L")
+    pdf.ln(3)
     
-    end_y = pdf.get_y() + 2
+    # --- تكبير خانة توقيع وختم القابض لتשغل نصف الورق تقريباً (ارتفاع 45 ملم) ---
+    pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 10)
+    pdf.cell(132, 6, ar("توقيع وختم القابض:"), ln=True, align="R")
+    
+    sign_box_y = pdf.get_y()
+    pdf.rect(8, sign_box_y, 132, 45) # مستطيل كبير بارتفاع 45 ملم
+    
+    # ضبط الإحداثيات لتخطي مساحة التوقيع الكبيرة بأمان لنهاية الإطار الخارجي
+    pdf.set_y(sign_box_y + 47)
+    
+    end_y = pdf.get_y()
     pdf.set_line_width(0.5)
     pdf.rect(8, 8, 132, end_y - 8)
     
