@@ -210,17 +210,7 @@ def ar(text):
 
 @st.cache_resource
 def ensure_arabic_font():
-    font_path = "Amiri-Regular.ttf"
-    if not os.path.exists(font_path):
-        try:
-            url = "https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Regular.ttf"
-            response = requests.get(url, timeout=5)
-            if response.status_code == 200:
-                with open(font_path, "wb") as f:
-                    f.write(response.content)
-        except Exception:
-            pass
-    return font_path if os.path.exists(font_path) else None
+    return None
 
 
 def generate_receipt_pdf(
