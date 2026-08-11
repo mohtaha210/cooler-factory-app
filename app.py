@@ -171,6 +171,11 @@ def load_all_factories():
                 if content:
                     data = json.loads(content)
         except Exception:
+            # إذا كان الملف تالفاً، يتم حذفه تلقائياً لمنع استمرار الخطأ
+            try:
+                os.remove(DATA_FILE)
+            except Exception:
+                pass
             data = {}
             
     for f_name, f_data in data.items():
