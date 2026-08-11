@@ -229,34 +229,35 @@ def generate_receipt_pdf(
     receipt_no,
 ):
     font_path = ensure_arabic_font()
-    pdf = FPDF()
+    pdf = FPDF(orientation="P", unit="mm", format="A4") # تم التعديل إلى A4
+    pdf.set_margins(12, 12, 12)
     pdf.add_page()
 
     if os.path.exists(font_path):
         pdf.add_font("Amiri", "", font_path)
-        pdf.set_font("Amiri", "", 20)
+        pdf.set_font("Amiri", "", 22)
     else:
-        pdf.set_font("Arial", "B", 16)
+        pdf.set_font("Arial", "B", 18)
 
     pdf.set_text_color(30, 41, 59)
-    pdf.cell(0, 10, ar(factory_name), ln=True, align="C")
+    pdf.cell(0, 12, ar(factory_name), ln=True, align="C")
     pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 16)
     pdf.cell(0, 8, ar("قائمة حساب (بالدولار الأمريكي)"), ln=True, align="C")
     pdf.ln(4)
 
-    pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 10)
+    pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 11)
     pdf.set_text_color(51, 65, 85)
-    pdf.cell(0, 6, ar(f"رقم القائمة: #{receipt_no}"), ln=True, align="R")
-    pdf.cell(0, 6, ar(f"التاريخ: {date_str}"), ln=True, align="R")
-    pdf.cell(0, 6, ar(f"اسم العميل / الوكيل: {customer_name}"), ln=True, align="R")
-    pdf.cell(0, 6, ar(f"سعر صرف الدولار المعتمد: {exchange_rate:,.0f} د.ع"), ln=True, align="R")
-    pdf.ln(4)
+    pdf.cell(0, 7, ar(f"رقم القائمة: #{receipt_no}"), ln=True, align="R")
+    pdf.cell(0, 7, ar(f"التاريخ: {date_str}"), ln=True, align="R")
+    pdf.cell(0, 7, ar(f"اسم العميل / الوكيل: {customer_name}"), ln=True, align="R")
+    pdf.cell(0, 7, ar(f"سعر صرف الدولار المعتمد: {exchange_rate:,.0f} د.ع"), ln=True, align="R")
+    pdf.ln(6)
 
     if items_data:
         pdf.set_fill_color(30, 41, 59)
         pdf.set_text_color(255, 255, 255)
 
-        col_widths = [35, 40, 20, 35, 60]
+        col_widths = [45, 45, 25, 45, 86]
         headers = [
             ar("الإجمالي ($)"),
             ar("السعر ($)"),
@@ -265,7 +266,7 @@ def generate_receipt_pdf(
             ar("نوع البراد"),
         ]
         for i, h in enumerate(headers):
-            pdf.cell(col_widths[i], 8, h, border=1, align="C", fill=True)
+            pdf.cell(col_widths[i], 9, h, border=1, align="C", fill=True)
         pdf.ln()
 
         pdf.set_fill_color(255, 255, 255)
@@ -273,11 +274,11 @@ def generate_receipt_pdf(
 
         for item in items_data:
             item_total_iqd = item['total_usd'] * exchange_rate
-            pdf.cell(col_widths[0], 8, f"${item['total_usd']:,.2f}", border=1, align="C")
-            pdf.cell(col_widths[1], 8, f"${item['price_usd']:,.2f}", border=1, align="C")
-            pdf.cell(col_widths[2], 8, str(item["count"]), border=1, align="C")
-            pdf.cell(col_widths[3], 8, f"{item_total_iqd:,.0f}", border=1, align="C")
-            pdf.cell(col_widths[4], 8, ar(item["model"]), border=1, align="C")
+            pdf.cell(col_widths[0], 9, f"${item['total_usd']:,.2f}", border=1, align="C")
+            pdf.cell(col_widths[1], 9, f"${item['price_usd']:,.2f}", border=1, align="C")
+            pdf.cell(col_widths[2], 9, str(item["count"]), border=1, align="C")
+            pdf.cell(col_widths[3], 9, f"{item_total_iqd:,.0f}", border=1, align="C")
+            pdf.cell(col_widths[4], 9, ar(item["model"]), border=1, align="C")
             pdf.ln()
 
     grand_total_iqd = grand_total_usd * exchange_rate
@@ -285,17 +286,17 @@ def generate_receipt_pdf(
     remaining_iqd = remaining_amount_usd * exchange_rate
 
     pdf.set_fill_color(241, 245, 249)
-    pdf.cell(50, 7, f"${grand_total_usd:,.2f}  /  {grand_total_iqd:,.0f} د.ع", border=1, align="C", fill=True)
-    pdf.cell(140, 7, ar("المبلغ الإجمالي للفاتورة"), border=1, align="C", fill=True)
+    pdf.cell(60, 8, f"${grand_total_usd:,.2f}  /  {grand_total_iqd:,.0f} د.ع", border=1, align="C", fill=True)
+    pdf.cell(136, 8, ar("المبلغ الإجمالي للفاتورة"), border=1, align="C", fill=True)
     pdf.ln()
-    pdf.cell(50, 7, f"${paid_amount_usd:,.2f}  /  {paid_iqd:,.0f} د.ع", border=1, align="C")
-    pdf.cell(140, 7, ar("المبلغ المدفوع نقدياً"), border=1, align="C")
+    pdf.cell(60, 8, f"${paid_amount_usd:,.2f}  /  {paid_iqd:,.0f} د.ع", border=1, align="C")
+    pdf.cell(136, 8, ar("المبلغ المدفوع نقدياً"), border=1, align="C")
     pdf.ln()
-    pdf.cell(50, 7, f"${remaining_amount_usd:,.2f}  /  {remaining_iqd:,.0f} د.ع", border=1, align="C")
-    pdf.cell(140, 7, ar("المبلغ المتبقي"), border=1, align="C")
+    pdf.cell(60, 8, f"${remaining_amount_usd:,.2f}  /  {remaining_iqd:,.0f} د.ع", border=1, align="C")
+    pdf.cell(136, 8, ar("المبلغ المتبقي"), border=1, align="C")
     pdf.ln(15)
 
-    pdf.cell(0, 6, ar("توقيع المستلم: .........................."), ln=True, align="L")
+    pdf.cell(0, 7, ar("توقيع المستلم: .........................."), ln=True, align="L")
     return bytes(pdf.output())
 
 
@@ -303,45 +304,46 @@ def generate_payment_pdf(
     factory_name, agent_name, date_str, amount_usd, remaining_debt_usd, old_debt_usd, exchange_rate, receipt_no, note=""
 ):
     font_path = ensure_arabic_font()
-    pdf = FPDF(orientation="P", unit="mm", format="A5")
-    pdf.set_margins(8, 8, 8)
+    pdf = FPDF(orientation="P", unit="mm", format="A4") # تم التعديل إلى A4 بالكامل
+    pdf.set_margins(12, 12, 12)
     pdf.add_page()
 
     if os.path.exists(font_path):
         pdf.add_font("Amiri", "", font_path)
-        pdf.set_font("Amiri", "", 13)
+        pdf.set_font("Amiri", "", 15)
     else:
-        pdf.set_font("Arial", "B", 12)
+        pdf.set_font("Arial", "B", 14)
 
     pdf.set_text_color(0, 0, 0)
     
-    pdf.set_y(8)
-    pdf.cell(0, 6, ar(factory_name), ln=True, align="C")
-    pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 11)
-    pdf.cell(0, 6, ar("سند قبض"), ln=True, align="C")
-    pdf.ln(2)
+    pdf.set_y(12)
+    pdf.cell(0, 8, ar(factory_name), ln=True, align="C")
+    pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 13)
+    pdf.cell(0, 7, ar("سند قبض"), ln=True, align="C")
+    pdf.ln(4)
 
-    pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 9)
+    pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 11)
     pdf.set_line_width(0.3)
     
-    pdf.cell(66, 6, ar(f"رقم المستند: {receipt_no}"), border=1, align="R")
-    pdf.cell(66, 6, ar(f"التاريخ: {date_str}"), border=1, align="R", ln=True)
-    pdf.cell(132, 6, ar(f"استلمت من السيد / {agent_name}"), border=1, align="R", ln=True)
+    # عرض صفحة A4 الإجمالي هو 210 ملم، الهوامش 12 يمين و 12 يسار، إذن العرض المتاح = 186 ملم
+    pdf.cell(93, 7, ar(f"رقم المستند: {receipt_no}"), border=1, align="R")
+    pdf.cell(93, 7, ar(f"التاريخ: {date_str}"), border=1, align="R", ln=True)
+    pdf.cell(186, 7, ar(f"استلمت من السيد / {agent_name}"), border=1, align="R", ln=True)
     
     amount_iqd = int(round(amount_usd * exchange_rate))
     amount_in_words = f"مبلغ وقدره: {number_to_arabic_words(amount_iqd)} دينار عراقي فقط لا غير"
     
     y_start_box = pdf.get_y()
     pdf.set_fill_color(240, 243, 246)
-    pdf.cell(132, 6, ar(amount_in_words), border=1, align="R", fill=True, ln=True)
+    pdf.cell(186, 7, ar(amount_in_words), border=1, align="R", fill=True, ln=True)
     
     # خطوط الشطب الأمني فوق خانة التفقيط
     pdf.set_line_width(0.2)
     pdf.set_draw_color(150, 150, 150)
-    box_x = 8.5
+    box_x = 12.5
     box_y = y_start_box
-    box_w = 131
-    box_h = 6
+    box_w = 185
+    box_h = 7
     step = 5
     current_x = box_x + 4
     while current_x < box_x + box_w:
@@ -352,32 +354,31 @@ def generate_payment_pdf(
     pdf.set_line_width(0.3)
     
     paid_iqd_val = int(round(amount_usd * exchange_rate))
-    pdf.cell(66, 6, ar(f"سعر الصرف: {exchange_rate:,.0f} د.ع"), border=1, align="R")
-    pdf.cell(66, 6, ar(f"المبلغ المدفوع: ${amount_usd:,.2f}  /  {paid_iqd_val:,} د.ع"), border=1, align="R", fill=True, ln=True)
+    pdf.cell(93, 7, ar(f"سعر الصرف: {exchange_rate:,.0f} د.ع"), border=1, align="R")
+    pdf.cell(93, 7, ar(f"المبلغ المدفوع: ${amount_usd:,.2f}  /  {paid_iqd_val:,} د.ع"), border=1, align="R", fill=True, ln=True)
     
     note_text = f"الملاحظات: {note}" if note else "الملاحظات: -"
-    pdf.cell(132, 6, ar(note_text), border=1, align="R", ln=True)
+    pdf.cell(186, 7, ar(note_text), border=1, align="R", ln=True)
     
     rem_iqd = int(round(remaining_debt_usd * exchange_rate))
     old_iqd = int(round(old_debt_usd * exchange_rate))
-    pdf.cell(132, 6, ar(f"الرصيد السابق: ${old_debt_usd:,.2f}  /  {old_iqd:,} د.ع"), border=1, align="R", fill=True, ln=True)
-    pdf.cell(132, 6, ar(f"الرصيد بعد التسديد: ${remaining_debt_usd:,.2f}  /  {rem_iqd:,} د.ع"), border=1, align="R", fill=True, ln=True)
+    pdf.cell(186, 7, ar(f"الرصيد السابق: ${old_debt_usd:,.2f}  /  {old_iqd:,} د.ع"), border=1, align="R", fill=True, ln=True)
+    pdf.cell(186, 7, ar(f"الرصيد بعد التسديد: ${remaining_debt_usd:,.2f}  /  {rem_iqd:,} د.ع"), border=1, align="R", fill=True, ln=True)
     
-    pdf.ln(3)
+    pdf.ln(4)
     
-    # --- تكبير خانة توقيع وختم القابض لتشغل نصف الورقة تماماً (ارتفاع 85 ملم) ---
-    pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 10)
-    pdf.cell(132, 6, ar("توقيع وختم القابض:"), ln=True, align="R")
+    # --- خانة توقيع وختم القابض مكبرة لتناسب ورقة A4 ---
+    pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 11)
+    pdf.cell(186, 7, ar("توقيع وختم القابض:"), ln=True, align="R")
     
     sign_box_y = pdf.get_y()
-    pdf.rect(8, sign_box_y, 132, 85) # مستطيل كبير جداً بارتفاع 85 ملم (نصف مساحة ورقة A5 تقريباً)
+    pdf.rect(12, sign_box_y, 186, 110) # مستطيل كبير ومناسب لورقة A4
     
-    # ضبط الإحداثيات لتخطي مساحة التوقيع الكبيرة بأمان لنهاية الإطار الخارجي
-    pdf.set_y(sign_box_y + 87)
+    pdf.set_y(sign_box_y + 112)
     
     end_y = pdf.get_y()
     pdf.set_line_width(0.5)
-    pdf.rect(8, 8, 132, end_y - 8)
+    pdf.rect(12, 12, 186, end_y - 12)
     
     return bytes(pdf.output())
 
