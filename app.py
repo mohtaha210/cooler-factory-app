@@ -162,24 +162,29 @@ def get_default_factory_data(factory_name, admin_user, admin_pass):
 def load_all_factories():
     if "in_memory_db" in st.session_state:
         return st.session_state.in_memory_db
+    
+    data = {}
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                st.session_state.in_memory_db = data
-                for f_name, f_data in data.items():
-                    if "finished_goods" not in f_data:
-                        f_data["finished_goods"] = {model: 0 for model in f_data.get("bom", {}).keys()}
-                    if "agents" not in f_data:
-                        f_data["agents"] = {}
-                    if "sales_history" not in f_data:
-                        f_data["sales_history"] = []
-                    if "production_history" not in f_data:
-                        f_data["production_history"] = []
-                return data
+                content = f.read().strip()
+                if content:
+                    data = json.loads(content)
         except Exception:
-            pass
-    return {}
+            data = {}
+            
+    for f_name, f_data in data.items():
+        if "finished_goods" not in f_data:
+            f_data["finished_goods"] = {model: 0 for model in f_data.get("bom", {}).keys()}
+        if "agents" not in f_data:
+            f_data["agents"] = {}
+        if "sales_history" not in f_data:
+            f_data["sales_history"] = []
+        if "production_history" not in f_data:
+            f_data["production_history"] = []
+            
+    st.session_state.in_memory_db = data
+    return data
 
 
 def save_all_factories(data):
