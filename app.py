@@ -365,15 +365,15 @@ def generate_payment_pdf(
     
     pdf.ln(3)
     
-    # --- تكبير خانة توقيع وختم القابض لتשغل نصف الورق تقريباً (ارتفاع 45 ملم) ---
+    # --- تكبير خانة توقيع وختم القابض لتشغل نصف الورقة تماماً (ارتفاع 85 ملم) ---
     pdf.set_font("Amiri" if os.path.exists(font_path) else "Arial", "", 10)
     pdf.cell(132, 6, ar("توقيع وختم القابض:"), ln=True, align="R")
     
     sign_box_y = pdf.get_y()
-    pdf.rect(8, sign_box_y, 132, 45) # مستطيل كبير بارتفاع 45 ملم
+    pdf.rect(8, sign_box_y, 132, 85) # مستطيل كبير جداً بارتفاع 85 ملم (نصف مساحة ورقة A5 تقريباً)
     
     # ضبط الإحداثيات لتخطي مساحة التوقيع الكبيرة بأمان لنهاية الإطار الخارجي
-    pdf.set_y(sign_box_y + 47)
+    pdf.set_y(sign_box_y + 87)
     
     end_y = pdf.get_y()
     pdf.set_line_width(0.5)
