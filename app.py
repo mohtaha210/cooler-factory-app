@@ -160,45 +160,35 @@ def get_default_factory_data(factory_name, admin_user, admin_pass):
 
 
 def load_all_factories():
+    if "in_memory_db" in st.session_state:
+        return st.session_state.in_memory_db
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            for f_name, f_data in data.items():
-                if "finished_goods" not in f_data:
-                    f_data["finished_goods"] = {model: 0 for model in f_data.get("bom", {}).keys()}
-                if "agents" not in f_data:
-                    f_data["agents"] = {}
-                if "sales_history" not in f_data:
-                    f_data["sales_history"] = []
-                if "production_history" not in f_data:
-                    f_data["production_history"] = []
-                for ag_name, ag_info in f_data["agents"].items():
-                    if not isinstance(ag_info, dict):
-                        f_data["agents"][ag_name] = {
-                            "phone": "",
-                            "debt_usd": 0.0,
-                            "transactions": [],
-                        }
-                    else:
-                        if "debt_usd" not in ag_info and "debt" in ag_info:
-                            ag_info["debt_usd"] = ag_info["debt"]
-                        if "debt_usd" not in ag_info:
-                            ag_info["debt_usd"] = 0.0
-                        if "transactions" not in ag_info:
-                            ag_info["transactions"] = []
-                        if "phone" not in ag_info:
-                            ag_info["phone"] = ""
-            return data
+                st.session_state.in_memory_db = data
+                for f_name, f_data in data.items():
+                    if "finished_goods" not in f_data:
+                        f_data["finished_goods"] = {model: 0 for model in f_data.get("bom", {}).keys()}
+                    if "agents" not in f_data:
+                        f_data["agents"] = {}
+                    if "sales_history" not in f_data:
+                        f_data["sales_history"] = []
+                    if "production_history" not in f_data:
+                        f_data["production_history"] = []
+                return data
         except Exception:
-            return {}
-    else:
-        return {}
+            pass
+    return {}
 
 
 def save_all_factories(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    st.session_state.in_memory_db = data
+    try:
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    except Exception:
+        pass
 
 
 def ar(text):
@@ -491,7 +481,7 @@ if not st.session_state.authenticated:
                 )
                 save_all_factories(all_factories)
                 st.success(f"✅ تم إنشاء [{new_factory_name}] بنجاح!")
-                st.stop()
+                st.rerun()
 
 current_factory_name = st.session_state.factory_key
 if current_factory_name not in all_factories:
